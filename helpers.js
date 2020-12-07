@@ -12,6 +12,12 @@ export function randomArray(len, n) {
     return a
 }
 
+export function swap(arr, a, b){
+    let temp = arr[a]
+    arr[a] = arr[b]
+    arr[b] = temp
+}
+
 function randomInt(n) {
     return Math.floor(Math.random() * (n + 1))
 }
