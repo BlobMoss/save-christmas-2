@@ -1,19 +1,19 @@
 import { distance } from './helpers.js'
 
 let grid = [
-    [' ',' ',' ',' ','#',' ',' ',' ',' ',' '],
-    [' ','B',' ',' ','#',' ','#','#','#',' '],
-    [' ',' ',' ',' ','#',' ',' ',' ',' ',' '],
-    ['#','#','#',' ','#',' ','#',' ','#','#'],
-    [' ',' ',' ',' ',' ',' ','#',' ',' ',' '],
-    [' ','#','#','#','#','#','#','#','#',' '],
-    [' ',' ',' ',' ',' ',' ','#',' ',' ',' '],
-    [' ','#',' ','#',' ',' ','#',' ',' ',' '],
-    [' ','#',' ','#',' ',' ','#',' ','A',' '],
-    [' ',' ',' ','#',' ',' ',' ',' ',' ',' ']
+    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ','#','B',' ',' ',' ',' ',' ',' '],
+    [' ',' ','#','#','#','#','#',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ',' ',' ','A',' ',' ',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
 ]
 
-// save start and end nodes
+// save start and end start nodes
 let start
 let end
 
@@ -67,8 +67,8 @@ while (node.parent != start){
 }
 
 function explore(node){
-    // calculates cost of node as distance from A + distance from B
-    const costOf = (node) => Math.floor((distance(node,start) + distance(node,end)) * 10)
+    // calculates cost of node as steps from A and distance from B
+    const costOf = (neighbor) => distance(node, neighbor) + distance(node,end)
 
     // don't search obstacles or already searched nodes
     const treversable = (node) => node.symbol != '#' && node.parent == undefined
