@@ -1,91 +1,115 @@
-//Hej, jag vet att det är rent skräp, men det fungerar och jag har lärt mig mycket om arrays i js. :D
-
 import { distance } from './helpers.js'
+
 let grid = [
-    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
-    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
-    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
-    [' ',' ','#','B',' ',' ',' ',' ',' ',' '],
-    [' ',' ','#','#','#','#','#',' ',' ',' '],
-    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
-    [' ',' ',' ',' ',' ',' ','A',' ',' ',' '],
-    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
-    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
-    [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ']
+    [' ',' ',' ',' ','#',' ',' ',' ',' ',' '],
+    [' ','B',' ',' ','#',' ','#','#','#',' '],
+    [' ',' ',' ',' ','#',' ',' ',' ',' ',' '],
+    ['#','#','#',' ','#',' ','#',' ','#','#'],
+    [' ',' ',' ',' ',' ',' ','#',' ',' ',' '],
+    [' ','#','#','#','#','#','#','#','#',' '],
+    [' ',' ',' ',' ',' ',' ','#',' ',' ',' '],
+    [' ','#',' ','#',' ',' ','#',' ',' ',' '],
+    [' ','#',' ','#',' ',' ','#',' ','A',' '],
+    [' ',' ',' ','#',' ',' ',' ',' ',' ',' ']
 ]
-let B
-let A
+
+// save start and end nodes
+let start
+let end
+
+// fill string matrix with node objects
 for (let x = 0; x < grid.length; x++){
     for (let y = 0; y < grid[x].length; y++){
-        if (grid[x][y] === 'A'){
-            A = [x, y]
-            grid[x][y] = [0,0,0]
-        } else if(grid[x][y] === 'B'){
-            B = [x, y]
+        const symbol = grid[x][y]
+
+        grid[x][y] = {
+            position : [x,y],
+            symbol : symbol,
+            explored : false,
+            cost : Infinity,
+            parent : undefined
+        }
+        
+        if (symbol === 'A'){
+            start = grid[x][y]
+            // lower cost of starting node to 0
+            start.cost = 0
+        } else if (symbol === 'B'){
+            end = grid[x][y]
         }
     }
 }
 
-while (true){
+// find and explore the cheapest node
+for (let cheapest; cheapest != end; explore(cheapest)){
     let distance = Infinity
-    let lowest
     for (let x = 0; x < grid.length; x++){
         for (let y = 0; y < grid[x].length; y++){
-            if (grid[x][y][0] < distance && grid[x][y].length == 3){
-                distance = grid[x][y][0]
-                lowest = [x, y]
+            const node = grid[x][y]
+            if (node.cost < distance && node.explored === false){
+                distance = node.cost
+                cheapest = node
             }
         }
     }
+    // exit if no unsearched nodes were found
+    if (distance === Infinity){
+        console.log('Path Obstructed!')
+        process.exit()
+    }
+}
+
+// find eldest ancestor node
+let node = end
+while (node.parent != start){
+    node = node.parent
+    node.symbol = 'x'
+}
+
+function explore(node){
+    // calculates cost of node as distance from A + distance from B
+    const costOf = (node) => Math.floor((distance(node,start) + distance(node,end)) * 10)
+
+    // don't search obstacles or already searched nodes
+    const treversable = (node) => node.symbol != '#' && node.parent == undefined
+
+    // make sure to only fit nodes inside grid
+    const limitX = (x) => Math.min(Math.max(x, 0), grid.length - 1)
+    const limitY = (y) => Math.min(Math.max(y, 0), grid[0].length - 1)
+
+    const x = node.position[0]
+    const y = node.position[1]
+
+    // find every neighboring node
+    const neighbors = [
+        grid[limitX(x + 1)][y],
+        grid[limitX(x - 1)][y],
+        grid[x][limitY(y + 1)],
+        grid[x][limitY(y - 1)],
+        grid[limitX(x + 1)][limitY(y - 1)],
+        grid[limitX(x - 1)][limitY(y - 1)],
+        grid[limitX(x + 1)][limitY(y + 1)],
+        grid[limitX(x - 1)][limitY(y + 1)]
+    ]
     
-    console.log(lowest)
-    if (lowest[0] === B[0] && lowest[1] === B[1]){
-        explore(lowest[0],lowest[1])
-        break
-    }
-    explore(lowest[0],lowest[1])
-}
-let node = [B[0],B[1]]
-while (true){
-    console.log(node)
-    let temp = node
-    node = grid[node[0]][node[1]]
-    grid[temp[0]][temp[1]] = '¤'
-    if (node[0] === A[0] && node[1] === A[1]){
-        break
-    }
+    // set cost and inheritance of each neighbor
+    neighbors.forEach(neighbor => {
+        if (treversable(neighbor)){
+            neighbor.cost = costOf(neighbor)
+            neighbor.parent = node
+        }
+    })
+
+    node.explored = true
 }
 
-function explore(x, y){
-    const value = (x, y) => Math.floor((distance([x,y],A) + distance([x,y],B)) * 10)
-    const treversable = (x, y) => grid[x][y].length != 2 && grid[x][y] != '#'
-
-    if (grid[x][y].length == 3){
-        grid[x][y].shift()
-    }
-
-    let center = [x, y]
-    if (treversable(x + 1, y)) grid[x + 1][y] = [value(x + 1, y),center[0],center[1]]
-    if (treversable(x - 1, y)) grid[x - 1][y] = [value(x - 1, y),center[0],center[1]]
-    if (treversable(x, y + 1)) grid[x][y + 1] = [value(x, y + 1),center[0],center[1]]
-    if (treversable(x, y - 1)) grid[x][y - 1] = [value(x, y - 1),center[0],center[1]]
-    if (treversable(x + 1, y + 1)) grid[x + 1][y + 1] = [value(x + 1, y + 1),center[0],center[1]]
-    if (treversable(x - 1, y + 1)) grid[x - 1][y + 1] = [value(x - 1, y + 1),center[0],center[1]]
-    if (treversable(x + 1, y - 1)) grid[x + 1][y - 1] = [value(x + 1, y - 1),center[0],center[1]]
-    if (treversable(x - 1, y - 1)) grid[x - 1][y - 1] = [value(x - 1, y - 1),center[0],center[1]]
-}
-
+// console.log every symbol of the matrix in a string
 let renderString = ''
 for (let x = 0; x < grid.length; x++){
     for (let y = 0; y < grid[x].length; y++){
-        //renderString += `[${grid[x][y]}]`
-        //continue
-        if (grid[x][y].length == 1){
-            renderString += `[${grid[x][y]}]`
-        } else{
-            renderString += '[ ]'
-        }
+        renderString += `[${grid[x][y].symbol}]`
     }
     renderString += '\n'
 }
+
 console.log(renderString)

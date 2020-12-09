@@ -18,8 +18,8 @@ export function swap(arr, a, b){
     arr[b] = temp
 }
 export function distance(a, b){
-    let x = a[0] - b[0]
-    let y = a[1] - b[1]
+    let x = a.position[0] - b.position[0]
+    let y = a.position[1] - b.position[1]
     return Math.sqrt(x * x + y * y)
 }
 function randomInt(n) {
